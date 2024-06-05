@@ -1,4 +1,3 @@
-
 var pokemons = ["Blue", "Orange", "Green", "Yellow", "Red", "Purple"];
 var board = [];
 var rows = 9;
@@ -10,14 +9,13 @@ var otherTile;
 
 var timeLeft = 120; 
 
-
 document.addEventListener("DOMContentLoaded", () => {
     const backgrounds = [
-        "./background.jpg",
-        "./background1.jpg",
-        "./background2.jpg",
-        "./background3.jpg",
-        "./background4.jpg",
+        "./images/background.jpg",
+        "./images/background1.jpg",
+        "./images/background2.jpg",
+        "./images/background3.jpg",
+        "./images/background4.jpg",
     ];
 
     const randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
@@ -35,6 +33,9 @@ window.onload = function() {
         slidePoke();
         generatePoke();
     }, 100);
+
+    // Update timer every second
+    setInterval(updateTimer, 1000);
 }
 
 function randomPoke() {
@@ -45,18 +46,22 @@ function startGame() {
     for (let r = 0; r < rows; r++) {
         let row = [];
         for (let c = 0; c < columns; c++) {
-            // <img id="0-0" src="./images/Red.png">
             let tile = document.createElement("img");
             tile.id = r.toString() + "-" + c.toString();
             tile.src = "./images/" + randomPoke() + ".png";
 
-            //DRAG FUNCTIONALITY
+            // DRAG FUNCTIONALITY
             tile.addEventListener("dragstart", dragStart); //click on a Poke, initialize drag process
             tile.addEventListener("dragover", dragOver);  //clicking on Poke, moving mouse to drag the Poke
             tile.addEventListener("dragenter", dragEnter); //dragging Poke onto another Poke
             tile.addEventListener("dragleave", dragLeave); //leave Poke over another Poke
             tile.addEventListener("drop", dragDrop); //dropping a Poke over another Poke
             tile.addEventListener("dragend", dragEnd); //after drag process completed, we swap pokemons
+
+            // TOUCH FUNCTIONALITY
+            tile.addEventListener("touchstart", touchStart);
+            tile.addEventListener("touchmove", touchMove);
+            tile.addEventListener("touchend", touchEnd);
 
             document.getElementById("board").append(tile);
             row.push(tile);
@@ -68,7 +73,6 @@ function startGame() {
 }
 
 function dragStart() {
-    //this refers to tile that was clicked on for dragging
     currTile = this;
 }
 
@@ -80,12 +84,9 @@ function dragEnter(e) {
     e.preventDefault();
 }
 
-function dragLeave() {
-
-}
+function dragLeave() {}
 
 function dragDrop() {
-    //this refers to the target tile that was dropped on
     otherTile = this;
 }
 
@@ -102,11 +103,11 @@ function dragEnd() {
     let r2 = parseInt(otherCoords[0]);
     let c2 = parseInt(otherCoords[1]);
 
-    let moveLeft = c2 == c-1 && r == r2;
-    let moveRight = c2 == c+1 && r == r2;
+    let moveLeft = c2 == c - 1 && r == r2;
+    let moveRight = c2 == c + 1 && r == r2;
 
-    let moveUp = r2 == r-1 && c == c2;
-    let moveDown = r2 == r+1 && c == c2;
+    let moveUp = r2 == r - 1 && c == c2;
+    let moveDown = r2 == r + 1 && c == c2;
 
     let isAdjacent = moveLeft || moveRight || moveUp || moveDown;
 
@@ -131,6 +132,21 @@ function dragEnd() {
     }
 }
 
+function touchStart(e) {
+    e.preventDefault();
+    currTile = e.target;
+}
+
+function touchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    otherTile = document.elementFromPoint(touch.clientX, touch.clientY);
+}
+
+function touchEnd(e) {
+    e.preventDefault();
+    dragEnd();
+}
 
 function crushPoke() {
     crushFour(); 
@@ -198,11 +214,10 @@ function checkValid() {
     return false;
 }
 
-
 function slidePoke() {
     for (let c = 0; c < columns; c++) {
         let ind = rows - 1;
-        for (let r = columns-1; r >= 0; r--) {
+        for (let r = columns - 1; r >= 0; r--) {
             if (!board[r][c].src.includes("blank")) {
                 board[ind][c].src = board[r][c].src;
                 ind -= 1;
@@ -265,8 +280,6 @@ function generatePoke() {
     }
 }
 
-
-
 function explodePoke(id) {
     let [r, c] = id.split("-").map(Number);
     for (let i = r - 1; i <= r + 1; i++) {
@@ -283,15 +296,13 @@ function explodePoke(id) {
     document.getElementById("score").innerText = score;
 }
 
-
 function updateTimer() {
     timeLeft--;
     document.getElementById("timer").innerText = timeLeft;
     if (timeLeft === 0) {
         clearInterval(timerInterval);
-        // quando o tempo acabar faz?
         alert("Tempo esgotado! Fim do jogo.");
     }
 }
 
-var timerInterval = setInterval(updateTimer, 1000); 
+var timerInterval = setInterval(updateTimer, 1000);
